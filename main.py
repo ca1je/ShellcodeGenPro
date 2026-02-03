@@ -22,10 +22,31 @@ from core.loader.raw_loader import RawLoaderFactory
 from core.loader.decrypt_loader import DecryptLoaderFactory
 from core.loader import LOADER_LANGS
 
+
 def main():
-    print("="*50)
-    print("        ShellcodeGenPro 2.4.5")
-    print("="*50)
+    print("=" * 50)
+    print("        ShellcodeGenPro 2.4.6.3")
+    print("=" * 50)
+
+    # ---------------------- 步骤0：选择目标编程语言（新增，移到加密前） ----------------------
+    print("\n【步骤0：选择目标编程语言】")
+    print("支持的编程语言：")
+    for idx, lang_name in enumerate(LANG_TYPES.keys(), 1):
+        print(f"  {idx}. {lang_name}")
+    lang_choice = get_user_choice("请选择编程语言编号：", list(range(1, len(LANG_TYPES) + 1)))
+    lang_name = list(LANG_TYPES.keys())[lang_choice - 1]
+    print(f"✅ 已选择编程语言：{lang_name}")
+
+    # 映射到加载器语言
+    lang_map = {
+        "C/C++": "C/C++",
+        "Python": "Python",
+        "Ruby": "Ruby",
+        "Go": "Go",
+        "C#": "C#",
+        "Java": "Java"
+    }
+    loader_lang = lang_map.get(lang_name, lang_name)
 
     # ---------------------- 步骤1：bin→raw shellcode（调用bin模块） ----------------------
     print("\n【步骤1：读取bin文件，生成原始shellcode】")
@@ -44,6 +65,7 @@ def main():
     encrypt_manager = EncryptManager()
     encryption_history = EncryptionHistory()
 
+    # 打开加密日志文件
     while True:
         if not confirm_continue("是否需要对shellcode进行加密？(y/n)："):
             break
@@ -52,8 +74,9 @@ def main():
         print("\n支持的加密算法：")
         for idx, alg_name in enumerate(encrypt_manager.supported_algorithms, 1):
             print(f"  {idx}. {alg_name}")
-        alg_choice = get_user_choice("请选择加密算法编号：", list(range(1, len(encrypt_manager.supported_algorithms)+1)))
-        alg_name = encrypt_manager.supported_algorithms[alg_choice-1]
+        alg_choice = get_user_choice("请选择加密算法编号：",
+                                     list(range(1, len(encrypt_manager.supported_algorithms) + 1)))
+        alg_name = encrypt_manager.supported_algorithms[alg_choice - 1]
 
         # ---------------------- 核心修改：支持字符串/十六进制双格式密钥输入 ----------------------
         custom_key = None
@@ -67,7 +90,9 @@ def main():
                 custom_nonce = None
                 if "XOR" in alg_name or "RC4" in alg_name:
                     # XOR/RC4 算法：无IV/nonce，仅密钥（支持字符串/十六进制，长度不限）
-                    key_type = get_user_choice("请选择密钥输入类型：\n  1. 字符串（直观，如：mysecret123）\n  2. 十六进制（高精度，如：a1b2c3d4）", [1, 2])
+                    key_type = get_user_choice(
+                        "请选择密钥输入类型：\n  1. 字符串（直观，如：mysecret123）\n  2. 十六进制（高精度，如：a1b2c3d4）",
+                        [1, 2])
                     if key_type == 1:
                         key_str = input(f"请输入自定义{alg_name}密钥（字符串格式）：").strip()
                         if not key_str:
@@ -88,7 +113,9 @@ def main():
                 elif "AES-256-CBC" in alg_name:
                     # AES-256-CBC：密钥32字节，IV 16字节（支持字符串/十六进制，自动适配长度）
                     print("\n--- 密钥配置（AES-256-CBC 要求32字节）---")
-                    key_type = get_user_choice("请选择密钥输入类型：\n  1. 字符串（自动补全/截断为32字节）\n  2. 十六进制（必须32字节，64个十六进制字符）", [1, 2])
+                    key_type = get_user_choice(
+                        "请选择密钥输入类型：\n  1. 字符串（自动补全/截断为32字节）\n  2. 十六进制（必须32字节，64个十六进制字符）",
+                        [1, 2])
                     if key_type == 1:
                         key_str = input("请输入AES-256-CBC密钥（字符串格式）：").strip()
                         if not key_str:
@@ -106,7 +133,9 @@ def main():
                         print(f"✅ 自定义AES-256-CBC十六进制密钥加载成功")
 
                     print("\n--- IV配置（AES-256-CBC 要求16字节）---")
-                    iv_type = get_user_choice("请选择IV输入类型：\n  1. 字符串（自动补全/截断为16字节）\n  2. 十六进制（必须16字节，32个十六进制字符）", [1, 2])
+                    iv_type = get_user_choice(
+                        "请选择IV输入类型：\n  1. 字符串（自动补全/截断为16字节）\n  2. 十六进制（必须16字节，32个十六进制字符）",
+                        [1, 2])
                     if iv_type == 1:
                         iv_str = input("请输入AES-256-CBC IV（字符串格式）：").strip()
                         if not iv_str:
@@ -125,7 +154,9 @@ def main():
                 elif "DES-CBC" in alg_name:
                     # DES-CBC：密钥8字节，IV 8字节（支持字符串/十六进制，自动适配长度）
                     print("\n--- 密钥配置（DES-CBC 要求8字节）---")
-                    key_type = get_user_choice("请选择密钥输入类型：\n  1. 字符串（自动补全/截断为8字节）\n  2. 十六进制（必须8字节，16个十六进制字符）", [1, 2])
+                    key_type = get_user_choice(
+                        "请选择密钥输入类型：\n  1. 字符串（自动补全/截断为8字节）\n  2. 十六进制（必须8字节，16个十六进制字符）",
+                        [1, 2])
                     if key_type == 1:
                         key_str = input("请输入DES-CBC密钥（字符串格式）：").strip()
                         if not key_str:
@@ -143,7 +174,9 @@ def main():
                         print(f"✅ 自定义DES-CBC十六进制密钥加载成功")
 
                     print("\n--- IV配置（DES-CBC 要求8字节）---")
-                    iv_type = get_user_choice("请选择IV输入类型：\n  1. 字符串（自动补全/截断为8字节）\n  2. 十六进制（必须8字节，16个十六进制字符）", [1, 2])
+                    iv_type = get_user_choice(
+                        "请选择IV输入类型：\n  1. 字符串（自动补全/截断为8字节）\n  2. 十六进制（必须8字节，16个十六进制字符）",
+                        [1, 2])
                     if iv_type == 1:
                         iv_str = input("请输入DES-CBC IV（字符串格式）：").strip()
                         if not iv_str:
@@ -162,7 +195,9 @@ def main():
                 elif "ChaCha20" in alg_name:
                     # ChaCha20：密钥32字节，nonce 16字节（支持字符串/十六进制，自动适配长度）
                     print("\n--- 密钥配置（ChaCha20 要求32字节）---")
-                    key_type = get_user_choice("请选择密钥输入类型：\n  1. 字符串（自动补全/截断为32字节）\n  2. 十六进制（必须32字节，64个十六进制字符）", [1, 2])
+                    key_type = get_user_choice(
+                        "请选择密钥输入类型：\n  1. 字符串（自动补全/截断为32字节）\n  2. 十六进制（必须32字节，64个十六进制字符）",
+                        [1, 2])
                     if key_type == 1:
                         key_str = input("请输入ChaCha20密钥（字符串格式）：").strip()
                         if not key_str:
@@ -180,7 +215,9 @@ def main():
                         print(f"✅ 自定义ChaCha20十六进制密钥加载成功")
 
                     print("\n--- Nonce配置（ChaCha20 要求16字节）---")
-                    nonce_type = get_user_choice("请选择Nonce输入类型：\n  1. 字符串（自动补全/截断为16字节）\n  2. 十六进制（必须16字节，32个十六进制字符）", [1, 2])
+                    nonce_type = get_user_choice(
+                        "请选择Nonce输入类型：\n  1. 字符串（自动补全/截断为16字节）\n  2. 十六进制（必须16字节，32个十六进制字符）",
+                        [1, 2])
                     if nonce_type == 1:
                         nonce_str = input("请输入ChaCha20 Nonce（字符串格式）：").strip()
                         if not nonce_str:
@@ -231,6 +268,7 @@ def main():
             encryption_history.add_encrypt_info(encrypt_info)
             print(f"\n✅ 加密成功！当前shellcode长度：{len(shellcode)} 字节")
 
+
             # 打印密钥信息（方便用户记录，解密加载器需要）
             print(f"🔑 加密密钥信息（请妥善保存）：")
             if "key_hex" in encrypt_info["params"]:
@@ -262,15 +300,11 @@ def main():
         print("\n支持的输出格式：")
         for idx, fmt_name in enumerate(OUTPUT_FORMATS.keys(), 1):
             print(f"  {idx}. {fmt_name}")
-        fmt_choice = get_user_choice("请选择输出格式编号：", list(range(1, len(OUTPUT_FORMATS)+1)))
-        fmt_name = list(OUTPUT_FORMATS.keys())[fmt_choice-1]
+        fmt_choice = get_user_choice("请选择输出格式编号：", list(range(1, len(OUTPUT_FORMATS) + 1)))
+        fmt_name = list(OUTPUT_FORMATS.keys())[fmt_choice - 1]
 
-        # 选择目标语言
-        print("\n支持的目标编程语言：")
-        for idx, lang_name in enumerate(LANG_TYPES.keys(), 1):
-            print(f"  {idx}. {lang_name}")
-        lang_choice = get_user_choice("请选择编程语言编号：", list(range(1, len(LANG_TYPES)+1)))
-        lang_name = list(LANG_TYPES.keys())[lang_choice-1]
+        # 使用之前选择的编程语言
+        print(f"\n使用已选择的编程语言：{lang_name}")
 
         # 选择是否分组
         is_grouped = confirm_continue("是否需要分组输出（便于阅读）？(y/n)：")
@@ -285,9 +319,9 @@ def main():
                 group_size=group_size
             )
             print("\n✅ 格式化成功！结果如下：")
-            print("-"*30)
+            print("-" * 30)
             print(formatted_content)
-            print("-"*30)
+            print("-" * 30)
         except Exception as e:
             print(f"❌ 格式化失败：{e}")
             return
@@ -311,12 +345,8 @@ def main():
         print("  2. 自动生成：解密加载器（适配加密历史）")
         loader_mode = get_user_choice("请选择加载器模式编号：", [1, 2])
 
-        # 选择加载器语言
-        print("\n支持的加载器编程语言：")
-        for idx, lang in enumerate(LOADER_LANGS, 1):
-            print(f"  {idx}. {lang}")
-        lang_choice = get_user_choice("请选择加载器编程语言编号：", list(range(1, len(LOADER_LANGS)+1)))
-        loader_lang = LOADER_LANGS[lang_choice-1]
+        # 使用之前选择的编程语言
+        print(f"\n使用已选择的编程语言：{loader_lang}")
 
         # 生成加载器
         try:
@@ -346,6 +376,7 @@ def main():
             print(f"❌ 加载器生成失败：{e}")
 
     print("\n🎉 所有操作完成！")
+
 
 if __name__ == "__main__":
     main()

@@ -63,7 +63,7 @@ class LangAdapter:
             return f'shellcode = [\n{base_formatted}\n]\nshellcode_len = {shellcode_len}'
         elif self._lang_type == "go":
             # Go：[]byte{}切片初始化 + 无冗余逗号 + 驼峰命名
-            return f'shellcode := []byte{{\n{base_formatted}\n}}\nshellcodeLen := {shellcode_len}'
+            return f'shellcode := []byte{{\n{base_formatted}}}\nshellcodeLen := {shellcode_len}'
         elif self._lang_type == "csharp":
             # C#：byte[]数组初始化 + 无冗余逗号
             return f'byte[] shellcode = new byte[] {{\n{base_formatted}\n}};\nint shellcodeLen = {shellcode_len};'

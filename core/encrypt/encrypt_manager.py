@@ -7,7 +7,6 @@ from .aes_encrypt import Aes256CbcEncryptor
 from .des_encrypt import DesCbcEncryptor
 from .rc4_encrypt import Rc4Encryptor
 from .chacha20_encrypt import ChaCha20Encryptor
-from .chacha20_encrypt2 import ChaCha20Encryptor2
 
 class EncryptionHistory:
     def __init__(self):
@@ -45,7 +44,7 @@ class EncryptManager:
         :param key: 自定义密钥
         :param iv: 自定义IV（仅AES/DES需要）
         :param nonce: 自定义nonce（仅ChaCha20需要）
-        :param target_lang: 目标语言，Python时使用ChaCha20Encryptor2
+        :param target_lang: 目标语言
         :return: 加密器实例
         """
         # 算法名称映射表，避免重复创建实例
@@ -65,7 +64,7 @@ class EncryptManager:
         # 根据算法类型创建实例
         if encryptor_cls == XorEncryptor or encryptor_cls == Rc4Encryptor:
             return encryptor_cls(key=key)
-        elif encryptor_cls in [ChaCha20Encryptor, ChaCha20Encryptor2]:
+        elif encryptor_cls == ChaCha20Encryptor:
             return encryptor_cls(key=key, nonce=nonce)
         else:
             return encryptor_cls(key=key, iv=iv)
@@ -78,7 +77,7 @@ class EncryptManager:
         :param key: 自定义密钥（None则随机生成）
         :param iv: 自定义IV（仅AES/DES需要，None则随机生成）
         :param nonce: 自定义nonce（仅ChaCha20需要，None则随机生成）
-        :param target_lang: 目标语言，Python时使用ChaCha20Encryptor2
+        :param target_lang: 目标语言
         :return: 加密后的shellcode + 加密信息字典
         """
         encryptor = self.get_encryptor(alg_full_name, key, iv, nonce, target_lang)

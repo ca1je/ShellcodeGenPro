@@ -51,7 +51,7 @@ class HexEscapeFormatter(BaseFormatter):
             return '"\n+ "'.join(grouped_lines)
         elif lang == "go":
             # Go：每行""包裹，编译器自动拼接（和C语言类似，符合Go规范）
-            return '"\n"'.join(grouped_lines)
+            return '"+\n"'.join(grouped_lines)
         elif lang == "csharp":
             # C#：每行""包裹，用+号拼接（C#不支持直接相邻字符串自动拼接）
             return '"\n+ "'.join(grouped_lines)
